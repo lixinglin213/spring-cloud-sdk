@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.thunisoft.msp.sdk.config.actuator.MonitorConfigure,\
+  com.thunisoft.msp.sdk.config.registry.RegistryConfigure
