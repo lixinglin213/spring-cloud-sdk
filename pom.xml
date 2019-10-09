@@ -11,19 +11,6 @@
 
     <artifactId>msp-spring-boot-starter</artifactId>
 
-    <distributionManagement>
-        <repository>
-            <id>public-repo</id>
-            <name>Thunisoft inc internal releases repository</name>
-            <url>http://repo.thunisoft.com/maven2/content/repositories/cmptreleases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>public-snapshots</id>
-            <name>Thunisoft inc internal snapshots repository</name>
-            <url>http://repo.thunisoft.com/maven2/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
