@@ -18,10 +18,8 @@ import lombok.Setter;
  * @since jdk 1.8
  */
 @ConfigurationProperties(prefix = "msp.monitor.actuator")
-@Configuration
 @Setter
 @Getter
-@Component
 public class MonitorProperties {
 
     private Set<String> include = new LinkedHashSet<>();

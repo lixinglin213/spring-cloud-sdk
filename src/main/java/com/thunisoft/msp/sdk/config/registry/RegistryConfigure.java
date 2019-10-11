@@ -12,7 +12,11 @@ import org.springframework.cloud.consul.discovery.ConsulDiscoveryProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import com.ecwid.consul.transport.TLSConfig;
+import com.ecwid.consul.v1.ConsulClient;
 
 
 /**
@@ -24,38 +28,44 @@ import java.util.List;
 @Configuration
 @EnableConfigurationProperties({RegistryProperties.class})
 @EnableDiscoveryClient
-@AutoConfigureBefore(ConsulAutoConfiguration.class)
 public class RegistryConfigure {
 
-    @Autowired
-    private RegistryProperties registryProperties;
-
-    @Autowired
-    private ConsulProperties consulProperties;
-
-    @Autowired
-    private ConsulDiscoveryProperties consulDiscoveryProperties;
-
     @Bean
-    public void registryHandler() {
-        consulProperties.setHost(registryProperties.getHost());
-        consulProperties.setPort(registryProperties.getPort());
-        consulDiscoveryProperties.setHealthCheckPath(registryProperties.getHealthCheckPath());
+    public ConsulClient consulClient(RegistryProperties registryProperties, ConsulDiscoveryProperties consulDiscoveryProperties) {
+        final int agentPort = registryProperties.getPort();
+        final String agentHost = !StringUtils.isEmpty(registryProperties.getScheme())
+                ? registryProperties.getScheme() + "://" + registryProperties.getHost()
+                : registryProperties.getHost();
+
         consulDiscoveryProperties.setPreferIpAddress(registryProperties.isPreferIpAddress());
         consulDiscoveryProperties.setScheme(registryProperties.getScheme());
-
+        consulDiscoveryProperties.setHealthCheckInterval(registryProperties.getHealthCheckInterval());
+        consulDiscoveryProperties.setEnabled(registryProperties.isEnabled());
+        if (StringUtils.isNotBlank(registryProperties.getHealthCheckPath())) {
+            consulDiscoveryProperties.setHealthCheckPath(registryProperties.getHealthCheckPath());
+        }
         if (StringUtils.isNotBlank(registryProperties.getInstanceId())) {
             consulDiscoveryProperties.setInstanceId(registryProperties.getInstanceId());
-        }
-        if (StringUtils.isNotBlank(registryProperties.getHealthCheckUrl())) {
-            consulDiscoveryProperties.setHealthCheckUrl(registryProperties.getHealthCheckUrl());
         }
         if (StringUtils.isNotBlank(registryProperties.getIpAddress())) {
             consulDiscoveryProperties.setIpAddress(registryProperties.getIpAddress());
         }
-        List<String> tags = registryProperties.getTags();
+        List<String> tags = new ArrayList<>();
         tags.add("registerTime=" + System.currentTimeMillis());
+        if (registryProperties.getTags() != null) {
+            tags.addAll(registryProperties.getTags());
+        }
         consulDiscoveryProperties.setTags(tags);
+
+
+        if (registryProperties.getTls() != null) {
+            ConsulProperties.TLSConfig tls = registryProperties.getTls();
+            TLSConfig tlsConfig = new TLSConfig(tls.getKeyStoreInstanceType(),
+                    tls.getCertificatePath(), tls.getCertificatePassword(),
+                    tls.getKeyStorePath(), tls.getKeyStorePassword());
+            return new ConsulClient(agentHost, agentPort, tlsConfig);
+        }
+        return new ConsulClient(agentHost, agentPort);
     }
 
 }
